@@ -1,6 +1,6 @@
 # PyTorch Pretrained BERT: The Big & Extending Repository of pretrained Transformers
 
-Objective: To Make STS2 Task run
+Objective: To Make SST-2 Task run
 
 ## Prerequisites
 - Ubuntu Linux with GPU
