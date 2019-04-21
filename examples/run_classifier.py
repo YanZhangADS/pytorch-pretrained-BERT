@@ -40,6 +40,11 @@ from pytorch_pretrained_bert.modeling import BertForSequenceClassification, Bert
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear
 
+try:
+    from tensorboardX import SummaryWriter
+except ImportError:
+    SummaryWriter = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -651,6 +656,7 @@ def main():
                              "Positive power of 2: static loss scaling value.\n")
     parser.add_argument('--server_ip', type=str, default='', help="Can be used for distant debugging.")
     parser.add_argument('--server_port', type=str, default='', help="Can be used for distant debugging.")
+    parser.add_argument('--use_tensorboard', required=False,help='Specifies that whether to use tensorboard',action='store_true')
     args = parser.parse_args()
 
     if args.server_ip and args.server_port:
@@ -721,7 +727,11 @@ def main():
         raise ValueError("Output directory ({}) already exists and is not empty.".format(args.output_dir))
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
-
+    
+    # Prepare to use Tensorboard if desired
+    use_tensorboard = args.use_tensorboard and (SummaryWriter is not None)
+    if use_tensorboard:
+        writer = SummaryWriter()
     task_name = args.task_name.lower()
 
     if task_name not in processors:
@@ -737,6 +747,7 @@ def main():
 
     train_examples = None
     num_train_optimization_steps = None
+    
     if args.do_train:
         train_examples = processor.get_train_examples(args.data_dir)
         num_train_optimization_steps = int(
@@ -844,7 +855,9 @@ def main():
                     optimizer.backward(loss)
                 else:
                     loss.backward()
-
+                if use_tensorboard:
+                    writer.add_scalar('train/loss', loss.item(), step)
+                
                 tr_loss += loss.item()
                 nb_tr_examples += input_ids.size(0)
                 nb_tr_steps += 1
@@ -941,7 +954,10 @@ def main():
         result['eval_loss'] = eval_loss
         result['global_step'] = global_step
         result['loss'] = loss
-
+        
+        if use_tensorboard:
+            writer.add_scalar('eval/loss', eval_loss, global_step)
+            writer.add_scalar('eval/loss', loss, global_step)
         output_eval_file = os.path.join(args.output_dir, "eval_results.txt")
         with open(output_eval_file, "w") as writer:
             logger.info("***** Eval results *****")
@@ -1016,6 +1032,7 @@ def main():
                 for key in sorted(result.keys()):
                     logger.info("  %s = %s", key, str(result[key]))
                     writer.write("%s = %s\n" % (key, str(result[key])))
-
+    if use_tensorboard:
+        writer.close()
 if __name__ == "__main__":
     main()
