@@ -50,7 +50,8 @@ python run_classifier.py \
   --train_batch_size 32 \
   --learning_rate 2e-5 \
   --num_train_epochs 3.0 \
-  --output_dir /tmp/$TASK_NAME/
+  --output_dir /tmp/$TASK_NAME/ \
+  --use_tensorboard
 ```
 The dev set results will be present within the text file 'eval_results.txt' in the specified output_dir. In case of MNLI, since there are two separate dev sets, matched and mismatched, there will be a separate output folder called '/tmp/MNLI-MM/' in addition to '/tmp/MNLI/'.
 
