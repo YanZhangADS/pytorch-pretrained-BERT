@@ -33,7 +33,7 @@ python download_glue_data.py
 
 - navigate into ./examples directory
 
-- run following commands.
+- To run `run_classifier.py` execute following commands.
 
 ```shell
 export GLUE_DIR=/path/to/glue_data
@@ -55,3 +55,8 @@ python run_classifier.py \
 ```
 The dev set results will be present within the text file 'eval_results.txt' in the specified output_dir. In case of MNLI, since there are two separate dev sets, matched and mismatched, there will be a separate output folder called '/tmp/MNLI-MM/' in addition to '/tmp/MNLI/'.
 
+- To run `run_classifier_bert.ipynb` execute following commands.
+
+```shell
+papermill run_classifier_bert.ipynb run_classifier_bert_output.ipynb --log-output --no-progress-bar -k python3
+```
